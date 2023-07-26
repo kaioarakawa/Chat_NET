@@ -1,0 +1,39 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<AppUser>
+
+@{
+	ViewData["Title"] = "Friends";
+}
+
+<h1>Amigos</h1>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>@Html.DisplayNameFor(model=>model.UserName)</th>
+
+			<th>Ações</th>
+
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@if (Model.Count() > 0)
+		{
+			@foreach (var user in Model)
+			{
+				<form asp-action="Delete">
+				<tr>
+					<input name="Id" value="@user.Id" hidden>
+					<td>@Html.DisplayFor(modelItem=>user.UserName)</td>
+					<td><button type="submit" class="btn btn-danger">Remove Friend</button></td>
+				</tr>
+				</form>
+			}
+		}
+		else
+		{
+			<tr><td>Nenhum amigo encontrado</td></tr>
+		}
+	</tbody>
+</table>

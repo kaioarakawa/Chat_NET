@@ -55,6 +55,10 @@ namespace ChatApp.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ToUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("UserID")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -67,6 +71,8 @@ namespace ChatApp.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ToUserId");
 
                     b.HasIndex("UserID");
 
@@ -317,13 +323,19 @@ namespace ChatApp.Data.Migrations
 
             modelBuilder.Entity("ChatApp.Models.Message", b =>
                 {
+                    b.HasOne("ChatApp.Models.AppUser", "ToUser")
+                        .WithMany("MessagesToUsers")
+                        .HasForeignKey("ToUserId")
+                        .IsRequired();
+
                     b.HasOne("ChatApp.Models.AppUser", "Sender")
                         .WithMany("Messages")
                         .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Sender");
+
+                    b.Navigation("ToUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -384,6 +396,8 @@ namespace ChatApp.Data.Migrations
                     b.Navigation("FriendsOf");
 
                     b.Navigation("Messages");
+
+                    b.Navigation("MessagesToUsers");
                 });
 #pragma warning restore 612, 618
         }

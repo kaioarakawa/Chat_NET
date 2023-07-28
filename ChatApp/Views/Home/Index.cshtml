@@ -1,81 +1,50 @@
-﻿@model IEnumerable<ChatApp.Models.Message>
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<AppUser>
+
 @{
-    ViewData["Title"] = "Home Page";
-    var userName = User.Identity.Name;
+	ViewData["Title"] = "Home Page";
+	var userName = User.Identity.Name;
 }
 
+<h1>Lista de contatos</h1>
 
-<div class="jumbotron bg-light">
-    <h2 class="text-center text-primary">
-        <i class="fab fa-facebook-messenger"></i>&nbsp; Public Chat
-    </h2>
-    <div class="row">
-        <div class="col-md-12" id="chat">
-            @if (Model != null)
-            {
-                @foreach (var message in Model.OrderBy(m => m.When))
-                {
-                    string containerClass, timePosition, textAlign, contcolor, offset;
+<table class="table">
+	<thead>
+		<tr>
+			<th>@Html.DisplayNameFor(model=>model.UserName)</th>
 
-                    if(userName == message.Username)
-                    {
-                        containerClass = "container darker";
-                        timePosition = "time-right text-white";
-                        textAlign = "text-right text-white";
-                        contcolor = "bg-primary";
-                        offset = "col-md-6 offset-md-6";
-                    }
-                    else
-                    {
-                        containerClass = "container";
-                        timePosition = "time-left";
-                        textAlign = "text-left";
-                        contcolor = "bg-light";
-                        offset = "";
-                    }
+			<th>Ações</th>
 
-                    <div class="row">
-                        <div class="@offset">
-                            <div class="@containerClass @contcolor">
-                                <p class="sender @textAlign">@message.Username</p>
-                                <p class="@textAlign">@message.Text</p>
-                                <span class="@timePosition">@message.When.ToString()</span>
-                            </div>
-                        </div>
-                    </div>
-                }
-            }
-        </div>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@if (Model.Count() > 0)
+		{
+			@foreach (var user in Model)
+			{
+				<form asp-controller="Home" asp-action="ChatUser">
+				<tr>
+					<input name="Id" value="@user.Id" hidden>
+					<td>@Html.DisplayFor(modelItem=>user.UserName)</td>
+					<td><button type="submit" class="btn btn-success">Message</button></td>
+				</tr>
+				</form>
+			}
+		}
+		else
+		{
+			<tr><td>Nenhum usuario encontrado</td></tr>
+		}
 
-        <div class="col-md-12">
-            <form asp-action="Create"
-                  data-ajax-begin="clearInputField" data-ajax-complete=""
-                  data-ajax-failure="alert('Fail')" data-ajax-success="sendMessage"
-                  data-ajax="true" data-ajax-method="POST">
-                  <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                  <div class="form-group">
-                      <input name="Text" class="form-control" id="messageText" />
-                  </div>
-                  <div class="form-group">
-                      <input type="submit" value="Send" id="submitButton" class="btn btn-primary"/>
-                  </div>
-                  <input type="hidden" value=@userName name="username" />
-            </form>
-        </div>
-
-    </div>
-</div>
+	</tbody>
+</table>
 
 @if (User.Identity.IsAuthenticated)
 {
     <script>
         const userName = "@userName";
+@*        const userId = "@userId";
+        const toUserId = "@toUserId";*@
     </script>
-}
-
-@section scripts {
-    <script src="~/signalr/signalr.min.js"></script>
-    <script src="~/lib/jquery/dist/jquery-unobtrusive-ajax.min.js"></script>
-    <script src="~/js/chat.js"></script>
-    <script src="~/js/signrReqHandler.js"></script>
 }

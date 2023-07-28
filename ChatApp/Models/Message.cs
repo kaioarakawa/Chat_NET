@@ -14,8 +14,8 @@ namespace ChatApp.Models
 
         public string UserID { get; set; }
         public virtual AppUser Sender { get; set; }
-        //public string FriendId { get; set; }
-        //public virtual AppUser Friend { get; set; }
+        public string ToUserId { get; set; }
+        public virtual AppUser ToUser { get; set; }
 
         public Message()
         {

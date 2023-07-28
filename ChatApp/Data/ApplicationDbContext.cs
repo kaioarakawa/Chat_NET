@@ -20,12 +20,12 @@ namespace ChatApp.Data
                 b.HasOne<AppUser>(a => a.Sender)
                 .WithMany(d => d.Messages)
                 .HasForeignKey(d => d.UserID)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-                //b.HasOne<AppUser>(a => a.Friend)
-                //.WithMany(d => d.MessagesOf)
-                //.HasForeignKey(d => d.FriendId)
-                //.OnDelete(DeleteBehavior.Restrict);
+                b.HasOne<AppUser>(d => d.ToUser)
+               .WithMany(p => p.MessagesToUsers)
+               .HasForeignKey(d => d.ToUserId)
+               .OnDelete(DeleteBehavior.ClientSetNull);
             });
 
             builder.Entity<Friends>(b =>

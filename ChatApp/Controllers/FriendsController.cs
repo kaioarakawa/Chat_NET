@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Plugins;
 using System.Diagnostics;
 using System.Linq;
 
@@ -24,7 +25,7 @@ namespace ChatApp.Controllers
         public async Task<IActionResult> Index()
 		{
 			var sender = await _userManager.GetUserAsync(User);
-			var friends = _context.Friends.Where(x => x.UserId == sender.Id).Select(x => x.UserFriendId).ToList();
+			var friends = _context.Friends.Where(x => x.UserId == sender.Id || x.UserFriendId == sender.Id).Select(x => x.UserFriendId).ToList();
 
 			var users = _userManager.Users.Where(x => x.Id != sender.Id && !friends.Contains(x.Id));
 
@@ -43,14 +44,25 @@ namespace ChatApp.Controllers
 			{
 				var sender = await _userManager.GetUserAsync(User);
 				var friend = _userManager.Users.Where(x => x.Id.Equals(user.Id)).FirstOrDefault();
-				var friendRequest = new Friends()
+
+				List<Friends> friends = new List<Friends>();
+
+				friends.Add(new Friends()
 				{
 					User = sender,
 					UserFriend = friend,
 					IsConfirmed = false,
-				};
-				await _context.Friends.AddAsync(friendRequest);
-				await _context.SaveChangesAsync();
+				});
+
+                friends.Add(new Friends()
+                {
+                    User = friend,
+                    UserFriend = sender,
+                    IsConfirmed = false,
+                });
+
+                await _context.Friends.AddRangeAsync(friends);
+                await _context.SaveChangesAsync();
 				return RedirectToAction("Index");
 			}
 			catch (Exception)
@@ -68,11 +80,11 @@ namespace ChatApp.Controllers
 				
 				var sender = await _userManager.GetUserAsync(User);
 				var friend = _userManager.Users.Where(x => x.Id.Equals(user.Id)).FirstOrDefault();
-				var friendRelation = _context.Friends.Where(x => x.UserId == sender.Id && x.UserFriendId == friend.Id).FirstOrDefault();
+				var friendRelation = _context.Friends.Where(x => (x.UserId == sender.Id && x.UserFriendId == friend.Id) || (x.UserId == friend.Id && x.UserFriendId == sender.Id));
 
 				if(friendRelation != null)
 				{
-					_context.Remove(friendRelation);
+					_context.RemoveRange(friendRelation);
 					await _context.SaveChangesAsync();
 				}
 				else
@@ -93,9 +105,8 @@ namespace ChatApp.Controllers
 		public async Task<IActionResult> List()
 		{
 			var user = await _userManager.GetUserAsync(User);
-			var friends = _context.Friends.Where(x => x.UserId == user.Id).Select(x => x.UserFriendId).ToList();
-
-			var userFriends = _userManager.Users.Where(x => friends.Contains(x.Id));
+            var friends = _context.Friends.Where(x => x.UserId == user.Id || x.UserFriendId == user.Id).Select(x => x.UserFriendId).ToList();
+            var userFriends = _userManager.Users.Where(x => friends.Contains(x.Id));
 
 			return View(userFriends);
 		}
